@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# 
+#
 # LSST Data Management System
 # Copyright 2008-2015 AURA/LSST.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
 import os
@@ -34,9 +34,11 @@ from lsst.obs.test import TestConfig
 ObsTestDir = lsst.utils.getPackageDir("obs_test")
 DataPath = os.path.join(ObsTestDir, "data", "input")
 
+
 class TestTask(pipeBase.CmdLineTask):
     ConfigClass = TestConfig
     _DefaultName = "test"
+
     def __init__(self, *args, **kwargs):
         pipeBase.CmdLineTask.__init__(self, *args, **kwargs)
         self.dataRefList = []
@@ -54,11 +56,14 @@ class TestTask(pipeBase.CmdLineTask):
             numProcessed = self.numProcessed,
         )
 
+
 class CannotConstructTask(TestTask):
     """A task that cannot be constructed; used to test error handling
     """
+
     def __init__(self, *args, **kwargs):
         raise RuntimeError("This task cannot be constructed")
+
 
 class NoMultiprocessTask(TestTask):
     """Version of TestTask that does not support multiprocessing"""
@@ -68,6 +73,7 @@ class NoMultiprocessTask(TestTask):
 class CmdLineTaskTestCase(unittest.TestCase):
     """A test case for CmdLineTask
     """
+
     def setUp(self):
         os.environ.pop("PIPE_INPUT_ROOT", None)
         os.environ.pop("PIPE_CALIB_ROOT", None)
@@ -150,7 +156,8 @@ class CmdLineTaskTestCase(unittest.TestCase):
         TestTask.parseAndRun(args=[DataPath, "--output", self.outPath, "--id", "visit=3", "filter=r",
                                    "--config", "floatField=-99.9", "--clobber-config", "--no-backup-config"])
         # Ensure backup config file was NOT created
-        self.assertFalse(os.path.exists(os.path.join(self.outPath, "config", TestTask._DefaultName + ".py~1")))
+        self.assertFalse(os.path.exists(os.path.join(
+            self.outPath, "config", TestTask._DefaultName + ".py~1")))
 
     def testMultiprocess(self):
         """Test multiprocessing at a very minimal level
@@ -164,7 +171,7 @@ class CmdLineTaskTestCase(unittest.TestCase):
         """Test error handling when a task cannot be constructed
         """
         for doRaise in (False, True):
-            args=[DataPath, "--output", self.outPath, "--id", "visit=1"]
+            args = [DataPath, "--output", self.outPath, "--id", "visit=1"]
             if doRaise:
                 args.append("--doraise")
             self.assertRaises(RuntimeError, CannotConstructTask.parseAndRun, args=args)
@@ -185,6 +192,7 @@ class TestMultipleIdTaskRunner(pipeBase.TaskRunner):
         """
         task = self.TaskClass(config=self.config, log=self.log)
         return task.run(target)
+
 
 class TestMultipleIdTask(pipeBase.CmdLineTask):
     _DefaultName = "test"
@@ -212,6 +220,7 @@ class MultipleIdTaskTestCase(unittest.TestCase):
     Tests implementation of ticket 2144, and demonstrates how
     to get results from multiple identifiers down into a Task.
     """
+
     def setUp(self):
         os.environ.pop("PIPE_INPUT_ROOT", None)
         os.environ.pop("PIPE_CALIB_ROOT", None)
@@ -233,6 +242,7 @@ class MultipleIdTaskTestCase(unittest.TestCase):
                 ]
         retVal = TestMultipleIdTask.parseAndRun(args=args)
         self.assertEqual(len(retVal.resultList), 1)
+
 
 def suite():
     """Return a suite containing all the test cases in this module.

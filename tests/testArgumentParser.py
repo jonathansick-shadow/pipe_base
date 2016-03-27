@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# 
+#
 # LSST Data Management System
 # Copyright 2008-2015 AURA/LSST.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
 import itertools
@@ -42,22 +42,26 @@ LocalDataPath = os.path.join(os.path.dirname(__file__), "data")
 #      print 'hi'
 #
 import contextlib
+
+
 @contextlib.contextmanager
 def capture():
     import sys
     from cStringIO import StringIO
-    oldout,olderr = sys.stdout, sys.stderr
+    oldout, olderr = sys.stdout, sys.stderr
     try:
-        out=[StringIO(), StringIO()]
-        sys.stdout,sys.stderr = out
+        out = [StringIO(), StringIO()]
+        sys.stdout, sys.stderr = out
         yield out
     finally:
-        sys.stdout,sys.stderr = oldout, olderr
+        sys.stdout, sys.stderr = oldout, olderr
         out[0] = out[0].getvalue()
         out[1] = out[1].getvalue()
 
+
 class SubConfig(pexConfig.Config):
     intItem = pexConfig.Field(doc="sample int field", dtype=int, default=8)
+
 
 class SampleConfig(pexConfig.Config):
     boolItem = pexConfig.Field(doc="sample bool field", dtype=bool, default=True)
@@ -68,10 +72,12 @@ class SampleConfig(pexConfig.Config):
                                    dtype=str, default="multiLineDoc")
     dsType = pexConfig.Field(doc="dataset type for --id argument", dtype=str, default="calexp")
     dsTypeNoDefault = pexConfig.Field(doc="dataset type for --id argument; no default", dtype=str,
-        optional=True)
+                                      optional=True)
+
 
 class ArgumentParserTestCase(unittest.TestCase):
     """A test case for ArgumentParser."""
+
     def setUp(self):
         self.ap = pipeBase.InputOnlyArgumentParser(name="argumentParser")
         self.ap.add_id_argument("--id", "raw", "help text")
@@ -99,7 +105,7 @@ class ArgumentParserTestCase(unittest.TestCase):
             args = [DataPath, "--id", "visit=22", "filter=g"],
         )
         self.assertEqual(len(namespace.id.idList), 1)
-        self.assertEqual(len(namespace.id.refList), 0) # no data for this ID
+        self.assertEqual(len(namespace.id.refList), 0)  # no data for this ID
 
     def testOtherId(self):
         """Test --other"""
@@ -120,7 +126,7 @@ class ArgumentParserTestCase(unittest.TestCase):
         self.assertEqual(len(namespace.id.idList), 1)
         self.assertEqual(len(namespace.id.refList), 1)
         self.assertEqual(len(namespace.otherId.idList), 1)
-        self.assertEqual(len(namespace.otherId.refList), 0) # no data for this ID
+        self.assertEqual(len(namespace.otherId.refList), 0)  # no data for this ID
 
     def testIdCross(self):
         """Test --id cross product, including order"""
@@ -136,25 +142,25 @@ class ArgumentParserTestCase(unittest.TestCase):
             ]
         )
         self.assertEqual(len(namespace.id.idList), 6)
-        predValList =  itertools.product(filterList, visitList)
+        predValList = itertools.product(filterList, visitList)
         for id, predVal in itertools.izip(namespace.id.idList, predValList):
             idVal = tuple(id[key] for key in ("filter", "visit"))
             self.assertEqual(idVal, predVal)
-        self.assertEqual(len(namespace.id.refList), 3) # only have data for three of these
+        self.assertEqual(len(namespace.id.refList), 3)  # only have data for three of these
 
     def testIdDuplicate(self):
         """Verify that each ID name can only appear once in a given ID argument"""
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--id", "visit=1", "visit=2"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--id", "visit=1", "visit=2"],
+                          )
 
     def testConfigBasics(self):
         """Test --config"""
         namespace = self.ap.parse_args(
             config = self.config,
             args = [DataPath, "--config", "boolItem=False", "floatItem=-67.1",
-                "strItem=overridden value", "subItem.intItem=5", "multiDocItem=edited value"],
+                    "strItem=overridden value", "subItem.intItem=5", "multiDocItem=edited value"],
         )
         self.assertEqual(namespace.config.boolItem, False)
         self.assertEqual(namespace.config.floatItem, -67.1)
@@ -167,8 +173,8 @@ class ArgumentParserTestCase(unittest.TestCase):
         namespace = self.ap.parse_args(
             config = self.config,
             args = [DataPath,
-                "--config", "floatItem=-67.1", "strItem=overridden value",
-                "--config", "strItem=final value"],
+                    "--config", "floatItem=-67.1", "strItem=overridden value",
+                    "--config", "strItem=final value"],
         )
         self.assertEqual(namespace.config.floatItem, -67.1)
         self.assertEqual(namespace.config.strItem, "final value")
@@ -176,9 +182,9 @@ class ArgumentParserTestCase(unittest.TestCase):
     def testConfigWrongNames(self):
         """Verify that incorrect names for config fields are caught"""
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--config", "missingItem=-67.1"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--config", "missingItem=-67.1"],
+                          )
 
     def testShow(self):
         """Test --show"""
@@ -201,14 +207,14 @@ class ArgumentParserTestCase(unittest.TestCase):
             self.assertIn("config.multiDocItem", res)
 
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--show", "config"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--show", "config"],
+                          )
 
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--show", "config=X"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--show", "config=X"],
+                          )
 
         # Test show with glob for single and multi-line doc strings
         for configStr, assertStr in ("*strItem*", "strDefault"), ("*multiDocItem", "multiLineDoc"):
@@ -216,21 +222,21 @@ class ArgumentParserTestCase(unittest.TestCase):
                 self.ap.parse_args(self.config, [DataPath, "--show", "config=" + configStr, "run"])
             stdout = out[0]
             stdoutList = stdout.rstrip().split("\n")
-            self.assertGreater(len(stdoutList), 2) # at least 2 docstring lines (1st line is always a \n)
-                                                   # and 1 config parameter
-            answer = [ans for ans in stdoutList if not ans.startswith("#")] # get rid of comment lines
+            self.assertGreater(len(stdoutList), 2)  # at least 2 docstring lines (1st line is always a \n)
+            # and 1 config parameter
+            answer = [ans for ans in stdoutList if not ans.startswith("#")]  # get rid of comment lines
             answer = [ans for ans in answer if not ":NOIGNORECASE to prevent this" in ans]
             self.assertEqual(len(answer), 2)       # only 1 config item matches (+ 1 \n entry per doc string)
             self.assertIn(assertStr, answer[1])
 
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--show", "badname", "run"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--show", "badname", "run"],
+                          )
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--show"], # no --show arguments
-        )
+                          config = self.config,
+                          args = [DataPath, "--show"],  # no --show arguments
+                          )
 
         # Test show with and without case sensitivity
         for configStr, shouldMatch in [("*multiDocItem*", True),
@@ -261,9 +267,9 @@ class ArgumentParserTestCase(unittest.TestCase):
         namespace = self.ap.parse_args(
             config = self.config,
             args = [DataPath,
-                "--config", "floatItem=5.5",
-                "--configfile", configFilePath,
-                "--config", "strItem=value from cmd line"],
+                    "--config", "floatItem=5.5",
+                    "--configfile", configFilePath,
+                    "--config", "strItem=value from cmd line"],
         )
         self.assertEqual(namespace.config.floatItem, -9e9)
         self.assertEqual(namespace.config.strItem, "value from cmd line")
@@ -271,9 +277,9 @@ class ArgumentParserTestCase(unittest.TestCase):
     def testConfigFileMissingFiles(self):
         """Verify that missing config override files are caught"""
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath, "--configfile", "missingFile"],
-        )
+                          config = self.config,
+                          args = [DataPath, "--configfile", "missingFile"],
+                          )
 
     def testAtFile(self):
         """Test @file"""
@@ -314,21 +320,21 @@ class ArgumentParserTestCase(unittest.TestCase):
             namespace = self.ap.parse_args(
                 config = self.config,
                 args = [DataPath, "--loglevel", str(intLevel),
-                    "foo.bar=%d" % (fooBarLevel,),
-                    "baz=0",
-                    "baz=%s" % bazLevel, # test that later values override earlier values
-                ],
+                        "foo.bar=%d" % (fooBarLevel,),
+                        "baz=0",
+                        "baz=%s" % bazLevel,  # test that later values override earlier values
+                        ],
             )
             self.assertEqual(namespace.log.getThreshold(), intLevel)
             self.assertEqual(namespace.log.getThresholdFor("foo.bar"), fooBarLevel)
             self.assertEqual(namespace.log.getThresholdFor("baz"), bazLevel)
 
         self.assertRaises(SystemExit, self.ap.parse_args,
-            config = self.config,
-            args = [DataPath,
-                "--loglevel", "INVALID_LEVEL",
-            ],
-        )
+                          config = self.config,
+                          args = [DataPath,
+                                  "--loglevel", "INVALID_LEVEL",
+                                  ],
+                          )
 
     def testPipeVars(self):
         """Test handling of $PIPE_x_ROOT environment variables, where x is INPUT, CALIB or OUTPUT
@@ -386,9 +392,9 @@ class ArgumentParserTestCase(unittest.TestCase):
                 namespace = ap.parse_args(
                     config = self.config,
                     args = [DataPath,
-                        argName, "calexp",
-                        "--id", "visit=2",
-                    ],
+                            argName, "calexp",
+                            "--id", "visit=2",
+                            ],
                 )
                 self.assertEqual(namespace.id.datasetType, "calexp")
                 self.assertEqual(len(namespace.id.idList), 1)
@@ -401,15 +407,15 @@ class ArgumentParserTestCase(unittest.TestCase):
                         ap.parse_args(
                             config = self.config,
                             args = [DataPath,
-                                "--id", "visit=2",
-                            ],
+                                    "--id", "visit=2",
+                                    ],
                         )
                 else:
                     namespace = ap.parse_args(
                         config = self.config,
                         args = [DataPath,
-                            "--id", "visit=2",
-                        ],
+                                "--id", "visit=2",
+                                ],
                     )
                     self.assertEqual(namespace.id.datasetType, default)
                     self.assertEqual(len(namespace.id.idList), 1)
@@ -426,9 +432,9 @@ class ArgumentParserTestCase(unittest.TestCase):
         namespace = ap.parse_args(
             config = self.config,
             args = [DataPath,
-                "calexp",
-                "--id", "visit=2",
-            ],
+                    "calexp",
+                    "--id", "visit=2",
+                    ],
         )
         self.assertEqual(namespace.id.datasetType, "calexp")
         self.assertEqual(len(namespace.id.idList), 1)
@@ -438,8 +444,8 @@ class ArgumentParserTestCase(unittest.TestCase):
             ap.parse_args(
                 config = self.config,
                 args = [DataPath,
-                    "--id", "visit=2",
-                ],
+                        "--id", "visit=2",
+                        ],
             )
 
     def testConfigDatasetTypeFieldDefault(self):
@@ -455,10 +461,10 @@ class ArgumentParserTestCase(unittest.TestCase):
         namespace = ap.parse_args(
             config = self.config,
             args = [DataPath,
-                "--id", "visit=2",
-            ],
+                    "--id", "visit=2",
+                    ],
         )
-        self.assertEqual(namespace.id.datasetType, "calexp") # default of config field dsType
+        self.assertEqual(namespace.id.datasetType, "calexp")  # default of config field dsType
         self.assertEqual(len(namespace.id.idList), 1)
 
     def testConfigDatasetTypeNoFieldDefault(self):
@@ -475,8 +481,8 @@ class ArgumentParserTestCase(unittest.TestCase):
             ap.parse_args(
                 config = self.config,
                 args = [DataPath,
-                    "--id", "visit=2",
-                ],
+                        "--id", "visit=2",
+                        ],
             )
 
     def testOutputs(self):
@@ -506,7 +512,7 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         # Unspecified
         with self.assertRaises(SystemExit):
-            parser.parse_args(config=self.config, args=[DataPath,])
+            parser.parse_args(config=self.config, args=[DataPath, ])
 
 
 def suite():
@@ -516,6 +522,7 @@ def suite():
     suites += unittest.makeSuite(ArgumentParserTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
     return unittest.TestSuite(suites)
+
 
 def run(shouldExit = False):
     utilsTests.run(suite(), shouldExit)

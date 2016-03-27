@@ -33,6 +33,7 @@ when pipe_base is setup):
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 
+
 class ExampleConfig(pexConfig.Config):
     """Config for argument parser example
     """
@@ -73,4 +74,4 @@ config = ExampleConfig()
 parsedCmd = parser.parse_args(config=config)
 pcDict = parsedCmd.__dict__
 for key in sorted(pcDict):
-        print "parsedCmd.%s=%r" % (key, pcDict[key])
+    print "parsedCmd.%s=%r" % (key, pcDict[key])

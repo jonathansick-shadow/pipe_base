@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division
-# 
+#
 # LSST Data Management System
 # Copyright 2008-2015 AURA/LSST.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@ from __future__ import absolute_import, division
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
 import sys
@@ -34,6 +34,7 @@ from lsst.pex.logging import getDefaultLog
 
 __all__ = ["CmdLineTask", "TaskRunner", "ButlerInitializedTaskRunner"]
 
+
 def _poolFunctionWrapper(function, arg):
     """Wrapper around function to catch exceptions that don't inherit from Exception
 
@@ -43,13 +44,14 @@ def _poolFunctionWrapper(function, arg):
     try:
         return function(arg)
     except Exception:
-        raise # No worries
+        raise  # No worries
     except:
         # Need to wrap the exception with something multiprocessing will recognise
         cls, exc, tb = sys.exc_info()
         log = getDefaultLog()
         log.warn("Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc()))
         raise Exception("Unhandled exception: %s (%s)" % (cls.__name__, exc))
+
 
 def _runPool(pool, timeout, function, iterable):
     """Wrapper around pool.map_async, to handle timeout
@@ -61,6 +63,7 @@ def _runPool(pool, timeout, function, iterable):
     that don't inherit from Exception.
     """
     return pool.map_async(functools.partial(_poolFunctionWrapper, function), iterable).get(timeout)
+
 
 @contextlib.contextmanager
 def profile(filename, log=None):
@@ -126,7 +129,8 @@ class TaskRunner(object):
     [1] http://bugs.python.org/issue8296
     [2] http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool)
     """
-    TIMEOUT = 9999 # Default timeout (sec) for multiprocessing
+    TIMEOUT = 9999  # Default timeout (sec) for multiprocessing
+
     def __init__(self, TaskClass, parsedCmd, doReturnResults=False):
         """!Construct a TaskRunner
 
@@ -199,7 +203,7 @@ class TaskRunner(object):
                     resultList = mapFunc(self, targetList)
             else:
                 log.warn("Not running the task because there is no data to process; "
-                    "you may preview data using \"--show data\"")
+                         "you may preview data using \"--show data\"")
 
         if pool is not None:
             pool.close()
@@ -319,7 +323,7 @@ class TaskRunner(object):
         elif isinstance(dataRef, (list, tuple)):
             self.log.addLabel(str([ref.dataId for ref in dataRef if hasattr(ref, "dataId")]))
         task = self.makeTask(args=args)
-        result = None # in case the task fails
+        result = None  # in case the task fails
         if self.doRaise:
             result = task.run(dataRef, **kwargs)
         else:
@@ -346,10 +350,12 @@ class TaskRunner(object):
                 result = result,
             )
 
+
 class ButlerInitializedTaskRunner(TaskRunner):
     """!A TaskRunner for CmdLineTasks that require a 'butler' keyword argument to be passed to
     their constructor.
     """
+
     def makeTask(self, parsedCmd=None, args=None):
         """!A variant of the base version that passes a butler argument to the task's constructor
 
@@ -367,6 +373,7 @@ class ButlerInitializedTaskRunner(TaskRunner):
         else:
             raise RuntimeError("parsedCmd or args must be specified")
         return self.TaskClass(config=self.config, log=self.log, butler=butler)
+
 
 class CmdLineTask(Task):
     """!Base class for command-line tasks: tasks that may be executed from the command line
@@ -471,7 +478,7 @@ class CmdLineTask(Task):
         """
         parser = ArgumentParser(name=cls._DefaultName)
         parser.add_id_argument(name="--id", datasetType="raw",
-            help="data IDs, e.g. --id visit=12345 ccd=1,2^0,3")
+                               help="data IDs, e.g. --id visit=12345 ccd=1,2^0,3")
         return parser
 
     def writeConfig(self, butler, clobber=False, doBackup=True):
@@ -495,8 +502,8 @@ class CmdLineTask(Task):
             output = lambda msg: self.log.fatal("Comparing configuration: " + msg)
             if not self.config.compare(oldConfig, shortcut=False, output=output):
                 raise TaskError(
-                    ("Config does not match existing task config %r on disk; tasks configurations " + \
-                    "must be consistent within the same output repo (override with --clobber-config)") % \
+                    ("Config does not match existing task config %r on disk; tasks configurations " +
+                     "must be consistent within the same output repo (override with --clobber-config)") %
                     (configName,))
         else:
             butler.put(self.config, configName)
@@ -523,8 +530,8 @@ class CmdLineTask(Task):
                 oldSchema = butler.get(schemaDataset, immediate=True).getSchema()
                 if not oldSchema.compare(catalog.getSchema(), afwTable.Schema.IDENTICAL):
                     raise TaskError(
-                        ("New schema does not match schema %r on disk; schemas must be " + \
-                        " consistent within the same output repo (override with --clobber-config)") % \
+                        ("New schema does not match schema %r on disk; schemas must be " +
+                         " consistent within the same output repo (override with --clobber-config)") %
                         (dataset,))
             else:
                 butler.put(catalog, schemaDataset)

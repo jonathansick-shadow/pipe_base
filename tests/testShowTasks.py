@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# 
+#
 # LSST Data Management System
 # Copyright 2013 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 import sys
@@ -28,12 +28,15 @@ import lsst.utils.tests as utilsTests
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 
+
 class SimpleTaskConfig(pexConfig.Config):
     ff3 = pexConfig.Field(doc="float 1", dtype=float, default=3.1)
     sf3 = pexConfig.Field(doc="str 1", dtype=str, default="default for sf1")
 
+
 class SimpleTask(pipeBase.Task):
     ConfigClass = SimpleTaskConfig
+
 
 class TaskWithSubtasksConfig(pexConfig.Config):
     sst1 = SimpleTask.makeField(doc="sub-subtask 1")
@@ -41,8 +44,10 @@ class TaskWithSubtasksConfig(pexConfig.Config):
     ff2 = pexConfig.Field(doc="float 1", dtype=float, default=3.1)
     sf2 = pexConfig.Field(doc="str 1", dtype=str, default="default for sf1")
 
+
 class TaskWithSubtasks(pipeBase.Task):
     ConfigClass = TaskWithSubtasksConfig
+
 
 class MainTaskConfig(pexConfig.Config):
     st1 = TaskWithSubtasks.makeField(doc="subtask 1")
@@ -60,6 +65,7 @@ c = MainTaskConfig()
 class ShowTasksTestCase(unittest.TestCase):
     """A test case for the code that implements ArgumentParser's --show tasks option
     """
+
     def testBasicShowTaskHierarchy(self):
         """Test basic usage of show
         """
@@ -78,8 +84,9 @@ st2.sst2: __main__.SimpleTask
             pipeBase.argumentParser.showTaskHierarchy(config)
         finally:
             sys.stdout = savedStdOut
-        
+
         self.assertEqual(tempStdOut.getvalue(), expectedData)
+
 
 def suite():
     """Return a suite containing all the test cases in this module.
